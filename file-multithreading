@@ -1,0 +1,75 @@
+from threading import Thread
+import os
+import sys
+
+#Global Variables Definitions
+#source directorypath
+directorypath = "/home/oracle/logs/"
+#Target directory_path = user@server:path
+target_directorypath=" oracle@c111fcf:/home/oracle/prav"
+nofthreads = 5
+file_list = []
+
+#Function Definitions
+class User(object):
+    def __init__(self, name):
+        self.name = name
+
+def input_nofthreads():
+	threads_entered=int(input("Enter the No of threads -->"))
+	print "threads_entered --> " + str(threads_entered)
+	if threads_entered > 10:
+		sys.exit("Maximuum Threads allowed is 10.Exiting !!!!")
+	return threads_entered
+		
+def rentimer(name,thread_file_list):
+    print "Thread " + name + " Started"
+    for fname in thread_file_list:
+        os.system("scp " + directorypath + fname + " " + target_directorypath)
+    print "Thread " + name + " Completed"
+	
+def Main():	
+	for (dirpath, dirnames, filenames) in os.walk(directorypath):
+		file_list.extend(filenames)
+		
+	#commented the below lines as of now not using the file.
+	#fwrite = open(dirpath + 'final.lst','w')
+	#for fcount in range(len(file_list)):
+		#fwrite.write("scp " + file_list[fcount] + " TO_TARGET\n")
+		#print "inside for loop" + str(fcount)
+	#fwrite.close()
+	
+	# Commenting the below as of now as program proceeds with the default thread 5.
+	#nofthreads=input_nofthreads()
+	#print "nofthreads returned " + str(nofthreads)
+		
+	nofilesinlist = len(file_list)/int(nofthreads)
+	print "nofilesinlist --> " + str(nofilesinlist)
+	print "========================================"	
+	for nt in range(nofthreads):
+		filelist = []
+		if nt != nofthreads -1:
+			#print "in if Condition" + str(range(len(file_list)))
+			for nofiles in range(nofilesinlist):
+				filelist.append(file_list[nofiles])
+				file_list.remove(file_list[nofiles])
+		else:
+			#print "in Else Condition" + str(range(len(file_list)))
+			for nofiles in range(len(file_list)):
+				filelist.append(file_list[nofiles])
+				#file_list.remove(file_list[nofiles])
+		print "========================================"
+		#print "Start thread --> " + str(nt)
+		#print "filelist -->" + str(filelist)
+		#for newf in range(len(filelist)):
+		#	print "newfile in list --> " + filelist[newf]
+		#print "End thread --> " + str(nt)
+		#print "========================================"
+		
+		thread1 = Thread(target=rentimer, args=("filecopier"+str(nt),filelist))
+		#print "thread1 =>" + str(thread1)
+		thread1.start()
+
+#Start of this Program
+if __name__ == "__main__":
+    Main()
